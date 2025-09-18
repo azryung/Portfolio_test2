@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>숲속의 스플랜더</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Gaegu', cursive;
+            background-color: #fdfaf6;
+            color: #5a4b41;
+            overscroll-behavior: none;
+        }
+        .watercolor-bg {
+            background-image: linear-gradient(120deg, #fef4e8 0%, #e8f5fef7 100%);
+        }
+        .card {
+            border: 2px solid rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            cursor: pointer;
+            position: relative;
+            background-color: white;
+            overflow: hidden;
+        }
+        .card:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        }
+        .token {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 2px solid white;
+            transition: transform 0.1s ease;
+            cursor: pointer;
+        }
+        .token:active {
+            transform: scale(0.9);
+        }
+        .token-green { background-color: #a7d7c5; }
+        .token-blue { background-color: #a2c2e8; }
+        .token-red { background-color: #f0b8b8; }
+        .token-black { background-color: #9c9c9c; }
+        .token-white { background-color: #f7f6f2; }
+        .token-gold { background-color: #f7d97b; }
+
+        .player-board.active {
+            border: 3px solid #f7b733;
+            box-shadow: 0 0 20px rgba(247, 183, 51, 0.5);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #fdfaf6; }
+        ::-webkit-scrollbar-thumb { background: #d3c4b8; border-radius: 4px;}
+        ::-webkit-scrollbar-thumb:hover { background: #bba99c; }
+
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-width: 90vw;
+        }
+        .modal-content h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #e58a8a;
+            margin-bottom: 1rem;
+        }
+        .modal-content p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body class="watercolor-bg min-h-screen text-lg">
+    <div id="game-container" class="p-4 max-w-7xl mx-auto">
+
+        <!-- Header -->
+        <header class="text-center my-4">
+            <h1 class="text-5xl font-bold text-amber-800">숲속의 스플랜더</h1>
+            <p id="game-status" class="text-xl mt-2 text-gray-600">1번 플레이어의 차례입니다. 행동을 선택해주세요.</p>
+        </header>
+
+        <!-- Top Row: Nobles and Tokens -->
+        <div class="flex flex-col md:flex-row gap-4 mb-4">
+            <!-- Nobles -->
+            <div id="nobles-area" class="flex-shrink-0 bg-white/50 p-3 rounded-xl shadow-inner flex items-center justify-center gap-3">
+                <!-- Nobles will be rendered here -->
+            </div>
+            <!-- Tokens -->
+            <div id="tokens-area" class="flex-grow bg-white/50 p-3 rounded-xl shadow-inner flex items-center justify-around gap-2 flex-wrap">
+                <!-- Tokens will be rendered here -->
+            </div>
+        </div>
+
+        <!-- Development Cards -->
+        <div id="cards-area" class="space-y-4 mb-4">
+            <!-- Cards will be rendered here -->
+        </div>
+
+        <!-- Player Boards -->
+        <div id="players-area" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Player boards will be rendered here -->
+        </div>
+
+        <!-- Action Buttons -->
+        <div id="action-controls" class="fixed bottom-4 right-4 bg-white p-3 rounded-lg shadow-xl flex flex-col gap-2 z-50">
+           <button id="take-tokens-btn" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition disabled:bg-gray-400">자원 가져가기</button>
+           <button id="reset-selection-btn" class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition">선택 초기화</button>
+        </div>
+
+    </div>
+    
+    <!-- Winner Modal -->
+    <div id="winner-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 id="winner-title">게임 종료!</h2>
+            <p id="winner-message"></p>
+            <button id="restart-btn" class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-xl">다시하기</button>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    
+        // --- DATA AND CONSTANTS ---
+        const GEMS = ['green', 'blue', 'red', 'black', 'white'];
+        const GEM_NAMES = { green: '나뭇잎', blue: '물방울', red: '열매', black: '조약돌', white: '목화솜', gold: '황금 도토리' };
+        
+        const ANIMAL_ICONS = {
+            squirrel: `
+                <svg viewBox="0 0 100 100" class="w-full h-full"><g transform="translate(0 -952.36)">
+                <path d="m50 962.36c-8 0-15 4-15 13 0 3 4 8 11 12-2 1-3 1-5 2-3 1-5 4-5 7 0 5 11 11 20 11s20-6 20-11c0-3-2-6-5-7-2-1-3-1-5-2 7-4 11-9 11-12 0-9-7-13-15-13z" fill="#c48a52"/>
+                <path d="m36 1015.4c-6 2-11 5-11 9 0 2 2 4 4 6 1 0 2-1 3-2 3-3 5-4 10-6-1-1-3-2-6-7z" fill="#a56e39"/>
+                <path d="m32 1030.4c-1 2-2 4-2 6 0 5 6 9 13 9s13-4 13-9c0-2-1-4-2-6h-22z" fill="#e3a76f"/>
+                <path d="m64 1015.4c6 2 11 5 11 9 0 2-2 4-4 6-1 0-2-1-3-2-3-3-5-4-10-6 1-1 3-2 6-7z" fill="#a56e39"/>
+                <ellipse cx="44.5" cy="980.36" rx="4.5" ry="5" fill="#2c2c2c"/>
+                <ellipse cx="55.5" cy="980.36" rx="4.5" ry="5" fill="#2c2c2c"/>
+                <path d="m50 985.36c-1 0-1 1-2 2s-1 2 0 2 2-1 2-2-1-2-0-2z" fill="#7d4e28"/>
+                </g></svg>`,
+            fox: `
+                <svg viewBox="0 0 100 100" class="w-full h-full"><g transform="translate(0 -952.36)">
+                <path d="m50 962.36-25 25 15 0 10-10 10 10 15 0-25-25z" fill="#e87a31"/>
+                <path d="m25 987.36 15 15 10 10h-25v-25z" fill="#f4a261"/>
+                <path d="m75 987.36-15 15-10 10h25v-25z" fill="#f4a261"/>
+                <path d="m50 1022.4 10-10h-20l10 10z" fill="#fff"/>
+                <path d="m40 997.36 20 0-10 15-10-15z" fill="#2c2c2c"/>
+                <circle cx="40" cy="982.36" r="5" fill="#2c2c2c"/>
+                <circle cx="60" cy="982.36" r="5" fill="#2c2c2c"/>
+                </g></svg>`,
+            bear: `
+                <svg viewBox="0 0 100 100" class="w-full h-full"><g transform="translate(0 -952.36)">
+                <circle cx="50" cy="1002.4" r="30" fill="#8c5e4a"/>
+                <circle cx="50" cy="1007.4" r="20" fill="#ab8068"/>
+                <circle cx="35" cy="972.36" r="10" fill="#7a4f3a"/>
+                <circle cx="65" cy="972.36" r="10" fill="#7a4f3a"/>
+                <circle cx="42" cy="1002.4" r="4" fill="#000"/>
+                <circle cx="58" cy="1002.4" r="4" fill="#000"/>
+                <path d="m50 1012.4c-4 0-4 2-4 4h8c0-2 0-4-4-4z" fill="#4a3123"/>
+                </g></svg>`,
+        };
+
+        const cardData = [
+            // Level 1
+            { level: 1, points: 0, gem: 'blue', animal: 'squirrel', costs: { white: 1, black: 1, green: 1, red: 1 } },
+            { level: 1, points: 0, gem: 'white', animal: 'squirrel', costs: { blue: 1, green: 2, red: 2 } },
+            { level: 1, points: 0, gem: 'black', animal: 'squirrel', costs: { white: 1, blue: 1, green: 1, red: 1 } },
+            { level: 1, points: 0, gem: 'red', animal: 'squirrel', costs: { white: 2, blue: 1, black: 1, green: 1 } },
+            { level: 1, points: 0, gem: 'green', animal: 'squirrel', costs: { white: 3 } },
+            { level: 1, points: 1, gem: 'blue', animal: 'fox', costs: { red: 4 } },
+            { level: 1, points: 0, gem: 'black', animal: 'squirrel', costs: { green: 2, red: 1 } },
+            { level: 1, points: 0, gem: 'white', animal: 'squirrel', costs: { red: 2, black: 2 } },
+            
+            // Level 2
+            { level: 2, points: 1, gem: 'green', animal: 'fox', costs: { blue: 2, red: 3, black: 2 } },
+            { level: 2, points: 2, gem: 'red', animal: 'fox', costs: { red: 5 } },
+            { level: 2, points: 2, gem: 'black', animal: 'fox', costs: { white: 1, blue: 4, green: 2 } },
+            { level: 2, points: 3, gem: 'blue', animal: 'fox', costs: { blue: 6 } },
+            { level: 2, points: 2, gem: 'white', animal: 'fox', costs: { white: 5, blue: 3 } },
+            { level: 2, points: 1, gem: 'red', animal: 'fox', costs: { blue: 3, white: 2, black: 3 } },
+
+            // Level 3
+            { level: 3, points: 3, gem: 'red', animal: 'bear', costs: { white: 3, black: 3, green: 3, blue: 5 } },
+            { level: 3, points: 4, gem: 'white', animal: 'bear', costs: { white: 7 } },
+            { level: 3, points: 4, gem: 'blue', animal: 'bear', costs: { blue: 7, red: 3 } },
+            { level: 3, points: 5, gem: 'green', animal: 'bear', costs: { green: 7, white: 3 } },
+        ];
+        
+        const nobleData = [
+            { points: 3, requirements: { green: 4, red: 4 } , name: "지혜로운 오소리" },
+            { points: 3, requirements: { blue: 4, black: 4 } , name: "위엄있는 독수리" },
+            { points: 3, requirements: { white: 3, red: 3, black: 3 }, name: "숲의 왕 사슴" },
+        ];
+        
+        // --- GAME STATE ---
+        let state = {};
+        let selectedTokens = {};
+        
+        // --- HTML ELEMENTS ---
+        const noblesArea = document.getElementById('nobles-area');
+        const tokensArea = document.getElementById('tokens-area');
+        const cardsArea = document.getElementById('cards-area');
+        const playersArea = document.getElementById('players-area');
+        const gameStatus = document.getElementById('game-status');
+        const takeTokensBtn = document.getElementById('take-tokens-btn');
+        const resetSelectionBtn = document.getElementById('reset-selection-btn');
+        const winnerModal = document.getElementById('winner-modal');
+        const winnerMessage = document.getElementById('winner-message');
+        const restartBtn = document.getElementById('restart-btn');
+
+        // --- HELPER FUNCTIONS ---
+        const shuffle = (array) => {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        };
+
+        // --- GAME INITIALIZATION ---
+        function initGame() {
+            const playerCount = 2;
+            state.players = Array.from({ length: playerCount }, (_, i) => ({
+                id: i + 1,
+                points: 0,
+                tokens: { green: 0, blue: 0, red: 0, black: 0, white: 0, gold: 0 },
+                bonuses: { green: 0, blue: 0, red: 0, black: 0, white: 0 },
+                cards: [],
+                reservedCards: []
+            }));
+
+            state.tokens = { green: 4, blue: 4, red: 4, black: 4, white: 4, gold: 5 };
+            
+            const allCards = cardData.map((card, i) => ({ ...card, id: `card-${i}` }));
+            state.decks = {
+                1: shuffle(allCards.filter(c => c.level === 1)),
+                2: shuffle(allCards.filter(c => c.level === 2)),
+                3: shuffle(allCards.filter(c => c.level === 3)),
+            };
+            
+            state.boardCards = {
+                1: state.decks[1].splice(0, 4),
+                2: state.decks[2].splice(0, 4),
+                3: state.decks[3].splice(0, 4),
+            };
+
+            state.nobles = shuffle(nobleData).slice(0, playerCount + 1);
+            
+            state.currentPlayerIndex = 0;
+            state.turn = 1;
+            state.lastPlayerTurn = -1; // For end game condition
+            selectedTokens = {};
+
+            winnerModal.classList.add('hidden');
+            render();
+        }
+
+        // --- RENDERING FUNCTIONS ---
+        function render() {
+            renderNobles();
+            renderTokens();
+            renderCards();
+            renderPlayers();
+            updateGameStatus();
+            updateActionButtons();
+        }
+
+        function renderNobles() {
+            noblesArea.innerHTML = state.nobles.map(noble => `
+                <div class="w-24 h-28 bg-amber-100 p-2 rounded-lg shadow-md flex flex-col items-center justify-center text-center">
+                    <div class="text-2xl font-bold">${noble.points}</div>
+                    <div class="text-xs mb-1">${noble.name}</div>
+                    <div class="space-y-1">
+                        ${Object.entries(noble.requirements).map(([gem, count]) => `
+                            <div class="flex items-center justify-center text-xs">
+                                <div class="w-4 h-4 rounded-full token-${gem} mr-1 border border-black/20"></div>
+                                <span>x ${count}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderTokens() {
+            const allGems = [...GEMS, 'gold'];
+            tokensArea.innerHTML = allGems.map(gem => `
+                <div class="flex flex-col items-center">
+                    <div id="token-${gem}" data-gem="${gem}" class="token token-${gem} text-xl font-bold ${state.tokens[gem] === 0 ? 'opacity-50' : 'cursor-pointer'}">
+                        ${getGemIcon(gem)}
+                    </div>
+                    <span class="mt-1 text-sm font-bold">${state.tokens[gem]}</span>
+                </div>
+            `).join('');
+            
+            GEMS.forEach(gem => {
+                const tokenEl = document.getElementById(`token-${gem}`);
+                if (tokenEl) tokenEl.addEventListener('click', () => selectToken(gem));
+            });
+        }
+        
+        function getGemIcon(gem) {
+            const icons = {
+                green: '🌿', blue: '💧', red: '🍓', black: '⚫', white: '☁️', gold: '🌰'
+            };
+            return icons[gem] || '';
+        }
+
+        function renderCards() {
+            cardsArea.innerHTML = [3, 2, 1].map(level => `
+                <div class="flex items-center gap-4">
+                    <div class="w-20 h-28 flex-shrink-0 bg-gray-600 rounded-lg text-white flex flex-col items-center justify-center">
+                        <div class="text-4xl font-bold">${level}</div>
+                        <div>(${state.decks[level].length})</div>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-grow">
+                        ${state.boardCards[level].map(card => renderCard(card)).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add event listeners for buying cards
+            document.querySelectorAll('.card[data-card-id]').forEach(el => {
+                const card = findCardOnBoard(el.dataset.cardId);
+                if(card) {
+                    el.addEventListener('click', () => attemptToBuyCard(card));
+                }
+            });
+        }
+
+        function renderCard(card, isReserved = false) {
+            const canAfford = isReserved ? canPlayerAfford(state.players[state.currentPlayerIndex], card) : false;
+
+            return `
+            <div id="${card.id}" data-card-id="${card.id}" class="card w-full h-40 flex flex-col justify-between p-2 ${isReserved && !canAfford ? 'opacity-70' : ''}">
+                <div>
+                    <div class="flex justify-between items-start">
+                        <div class="text-2xl font-bold">${card.points > 0 ? card.points : ''}</div>
+                        <div class="w-8 h-8 rounded-full token-${card.gem} flex items-center justify-center border-2 border-white shadow-sm">${getGemIcon(card.gem)}</div>
+                    </div>
+                    <div class="w-12 h-12 mx-auto mt-1 text-gray-700">
+                        ${ANIMAL_ICONS[card.animal] || ''}
+                    </div>
+                </div>
+                <div class="space-y-1 text-xs">
+                    ${Object.entries(card.costs).map(([gem, count]) => `
+                        <div class="flex items-center justify-end">
+                            <span class="font-bold mr-1">${count}</span>
+                            <div class="w-4 h-4 rounded-full token-${gem} border border-black/20"></div>
+                        </div>
+                    `).join('')}
+                </div>
+                 ${isReserved && canAfford ? '<div class="absolute inset-0 bg-green-400/50 flex items-center justify-center text-white font-bold text-lg">구매 가능!</div>' : ''}
+            </div>
+            `;
+        }
+
+        function renderPlayers() {
+            playersArea.innerHTML = state.players.map((player, index) => `
+                <div id="player-board-${player.id}" class="player-board bg-white/60 p-4 rounded-xl shadow-inner ${index === state.currentPlayerIndex ? 'active' : ''}">
+                    <h2 class="text-2xl font-bold mb-2">플레이어 ${player.id} - ${player.points}점</h2>
+                    
+                    <div class="flex gap-4">
+                        <!-- Tokens and Reserved Cards -->
+                        <div class="w-1/3">
+                            <h3 class="font-bold mb-1">내 자원</h3>
+                            <div class="grid grid-cols-3 gap-1">
+                                ${[...GEMS, 'gold'].map(gem => `
+                                    <div class="flex items-center text-sm">
+                                        <div class="token-sm w-5 h-5 rounded-full token-${gem} mr-1 border border-black/20"></div>
+                                        <span>x ${player.tokens[gem]}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <h3 class="font-bold mt-3 mb-1">예약한 카드 (${player.reservedCards.length}/3)</h3>
+                            <div class="flex gap-2">
+                                ${player.reservedCards.map(card => renderCard(card, true)).join('') || '<div class="text-sm text-gray-500">없음</div>'}
+                            </div>
+                        </div>
+
+                        <!-- Bonuses -->
+                        <div class="w-2/3">
+                            <h3 class="font-bold mb-1">초대한 친구 (보너스)</h3>
+                            <div class="grid grid-cols-5 gap-2">
+                                ${GEMS.map(gem => `
+                                    <div class="text-center">
+                                        <div class="w-12 h-12 mx-auto rounded-full token-${gem} flex items-center justify-center text-2xl mb-1 border-2 border-white shadow-md">${getGemIcon(gem)}</div>
+                                        <div class="font-bold text-xl">${player.bonuses[gem]}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add event listeners for buying reserved cards
+            state.players.forEach(player => {
+                if (player.id - 1 === state.currentPlayerIndex) {
+                    player.reservedCards.forEach(card => {
+                        document.getElementById(card.id).addEventListener('click', () => attemptToBuyCard(card, true));
+                    });
+                }
+            });
+        }
+        
+        function updateGameStatus() {
+            if (state.lastPlayerTurn !== -1) {
+                gameStatus.textContent = `마지막 라운드! ${state.currentPlayerIndex + 1}번 플레이어의 차례입니다.`;
+            } else {
+                 gameStatus.textContent = `${state.currentPlayerIndex + 1}번 플레이어의 차례입니다. 행동을 선택해주세요.`;
+            }
+        }
+        
+        function updateActionButtons() {
+            const selectionCount = Object.values(selectedTokens).reduce((a, b) => a + b, 0);
+            const isTwoSame = Object.values(selectedTokens).some(v => v === 2);
+            const isThreeDifferent = selectionCount === 3 && Object.keys(selectedTokens).length === 3;
+            const isValidTwoSame = isTwoSame && selectionCount === 2 && state.tokens[Object.keys(selectedTokens)[0]] >= 2;
+
+            takeTokensBtn.disabled = !(isThreeDifferent || isValidTwoSame);
+        }
+
+        // --- PLAYER ACTIONS & GAME LOGIC ---
+
+        function selectToken(gem) {
+            const currentSelectionCount = Object.values(selectedTokens).reduce((sum, val) => sum + val, 0);
+            const selectedGemCount = selectedTokens[gem] || 0;
+
+            if (selectedGemCount === 1 && currentSelectionCount < 2) {
+                 // Selecting the same token twice
+                 if (state.tokens[gem] >= 3) { // Need at least 4 total for player to take 2
+                    selectedTokens[gem] = 2;
+                 } else {
+                     console.log("Not enough tokens to take two.");
+                     return;
+                 }
+            } else if (selectedGemCount === 0 && currentSelectionCount < 3 && !Object.values(selectedTokens).some(v => v===2)) {
+                // Selecting a new token
+                selectedTokens[gem] = 1;
+            }
+            
+            console.log("Selected:", selectedTokens);
+            updateActionButtons();
+        }
+
+        function resetSelection() {
+            selectedTokens = {};
+            updateActionButtons();
+            console.log("Selection reset.");
+        }
+        
+        takeTokensBtn.addEventListener('click', () => {
+            if (takeTokensBtn.disabled) return;
+            const player = state.players[state.currentPlayerIndex];
+            
+            // Logic to prevent taking more than 10 tokens
+            const totalTokensAfter = Object.values(player.tokens).reduce((a, b) => a + b, 0) + Object.values(selectedTokens).reduce((a, b) => a + b, 0);
+            if (totalTokensAfter > 10) {
+                alert(`자원은 10개까지만 가질 수 있습니다. (현재 ${Object.values(player.tokens).reduce((a, b) => a + b, 0)}개)`);
+                return;
+            }
+
+            for (const gem in selectedTokens) {
+                player.tokens[gem] += selectedTokens[gem];
+                state.tokens[gem] -= selectedTokens[gem];
+            }
+            
+            resetSelection();
+            endTurn();
+        });
+
+        resetSelectionBtn.addEventListener('click', resetSelection);
+
+        function findCardOnBoard(cardId) {
+            for(const level in state.boardCards) {
+                const card = state.boardCards[level].find(c => c.id === cardId);
+                if (card) return card;
+            }
+            return null;
+        }
+        
+        function canPlayerAfford(player, card) {
+            let wildcardsNeeded = 0;
+            for (const gem in card.costs) {
+                const cost = card.costs[gem];
+                const available = player.tokens[gem] + player.bonuses[gem];
+                if (available < cost) {
+                    wildcardsNeeded += cost - available;
+                }
+            }
+            return player.tokens.gold >= wildcardsNeeded;
+        }
+
+        function attemptToBuyCard(card, isReserved = false) {
+            const player = state.players[state.currentPlayerIndex];
+            if (!canPlayerAfford(player, card)) {
+                alert('자원이 부족하여 구매할 수 없습니다!');
+                return;
+            }
+            
+            // Pay for card
+            let goldUsed = 0;
+            for (const gem in card.costs) {
+                const cost = card.costs[gem];
+                const paidByBonus = Math.min(cost, player.bonuses[gem]);
+                const remainingCost = cost - paidByBonus;
+                const paidByTokens = Math.min(remainingCost, player.tokens[gem]);
+                
+                player.tokens[gem] -= paidByTokens;
+                state.tokens[gem] += paidByTokens; // Return tokens to bank
+                
+                const stillNeeded = remainingCost - paidByTokens;
+                if (stillNeeded > 0) {
+                    player.tokens.gold -= stillNeeded;
+                    state.tokens.gold += stillNeeded;
+                    goldUsed += stillNeeded;
+                }
+            }
+
+            // Add card to player
+            player.cards.push(card);
+            player.points += card.points;
+            player.bonuses[card.gem]++;
+
+            // Remove card from where it was
+            if (isReserved) {
+                player.reservedCards = player.reservedCards.filter(c => c.id !== card.id);
+            } else {
+                 for (const level in state.boardCards) {
+                    const cardIndex = state.boardCards[level].findIndex(c => c.id === card.id);
+                    if (cardIndex !== -1) {
+                        const newCard = state.decks[level].length > 0 ? state.decks[level].pop() : null;
+                        if (newCard) {
+                            state.boardCards[level][cardIndex] = newCard;
+                        } else {
+                            state.boardCards[level].splice(cardIndex, 1);
+                        }
+                        break;
+                    }
+                }
+            }
+            
+            checkForNobleVisit(player);
+            endTurn();
+        }
+        
+        function checkForNobleVisit(player) {
+            const availableNobles = state.nobles.slice();
+            for (let i = availableNobles.length - 1; i >= 0; i--) {
+                const noble = availableNobles[i];
+                let canClaim = true;
+                for (const gem in noble.requirements) {
+                    if (player.bonuses[gem] < noble.requirements[gem]) {
+                        canClaim = false;
+                        break;
+                    }
+                }
+                if (canClaim) {
+                    player.points += noble.points;
+                    state.nobles.splice(i, 1);
+                    alert(`${player.id}번 플레이어가 ${noble.name}을 초대했습니다! (+${noble.points}점)`);
+                }
+            }
+        }
+        
+        function endTurn() {
+            const currentPlayer = state.players[state.currentPlayerIndex];
+            
+            // Check for game end condition
+            if (currentPlayer.points >= 15 && state.lastPlayerTurn === -1) {
+                state.lastPlayerTurn = state.currentPlayerIndex;
+            }
+
+            // Move to next player
+            state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
+            
+            // If we've completed a full round after someone hit 15 points
+            if (state.lastPlayerTurn !== -1 && state.currentPlayerIndex === state.lastPlayerTurn) {
+                endGame();
+            } else {
+                state.turn++;
+                render();
+            }
+        }
+        
+        function endGame() {
+            let winner = null;
+            let maxPoints = -1;
+            
+            state.players.forEach(p => {
+                if (p.points > maxPoints) {
+                    maxPoints = p.points;
+                    winner = p;
+                } else if (p.points === maxPoints) {
+                    // Tie-breaker: fewer development cards
+                    if (p.cards.length < winner.cards.length) {
+                        winner = p;
+                    }
+                }
+            });
+
+            winnerMessage.textContent = `축하합니다! ${winner.id}번 플레이어가 ${winner.points}점으로 승리했습니다!`;
+            winnerModal.classList.remove('hidden');
+        }
+
+        restartBtn.addEventListener('click', () => {
+            winnerModal.classList.add('hidden');
+            initGame();
+        });
+
+        // --- INITIALIZE GAME ---
+        initGame();
+    });
+    </script>
+</body>
+</html>
