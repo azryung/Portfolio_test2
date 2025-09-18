@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>겁없는 초보 AI 개발자 룡룡 포트폴리오</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* 기본 폰트 설정 */
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            scroll-behavior: smooth;
+        }
+        /* 배경 이미지 및 어두운 오버레이 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            z-index: -1;
+            background-image: url('https://images.unsplash.com/photo-1534723452862-4c874018d66d?q=80&w=2670&auto=format&fit=crop'); /* AI 관련 추상적인 이미지 */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            filter: brightness(0.2); /* 배경을 더 어둡게 처리 */
+        }
+        /* 스크롤바 스타일링 (선택 사항) */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4a4a4a;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5a5a5a;
+        }
+        /* 섹션 제목 그라데이션 효과 */
+        .section-title {
+            background: linear-gradient(90deg, #38bdf8, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-200">
+
+    <!-- Header & Navigation -->
+    <header class="bg-black bg-opacity-80 backdrop-blur-sm fixed top-0 left-0 right-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-xl font-bold text-white">RYUNG GWAK</a>
+            <nav class="hidden md:flex space-x-8 text-sm">
+                <a href="#about" class="hover:text-sky-400 transition-colors duration-300">소개</a>
+                <a href="#skills" class="hover:text-sky-400 transition-colors duration-300">기술</a>
+                <a href="#projects" class="hover:text-sky-400 transition-colors duration-300">프로젝트</a>
+                <a href="#contact" class="hover:text-sky-400 transition-colors duration-300">연락처</a>
+            </nav>
+            <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
+                <i class="fas fa-bars fa-lg"></i>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-black bg-opacity-90">
+            <a href="#about" class="block text-center py-3 hover:bg-gray-800 transition-colors duration-300">소개</a>
+            <a href="#skills" class="block text-center py-3 hover:bg-gray-800 transition-colors duration-300">기술</a>
+            <a href="#projects" class="block text-center py-3 hover:bg-gray-800 transition-colors duration-300">프로젝트</a>
+            <a href="#contact" class="block text-center py-3 hover:bg-gray-800 transition-colors duration-300">연락처</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 pt-24">
+
+        <!-- Hero Section -->
+        <section id="hero" class="min-h-screen flex flex-col justify-center items-center text-center">
+            <h1 class="text-5xl md:text-7xl font-black mb-4 leading-tight">
+                <span class="text-white">AI Agent Developer</span><br>
+                <span class="section-title">곽난령입니다.</span>
+            </h1>
+            <p class="max-w-2xl text-lg md:text-xl text-gray-300 mb-8">
+                데이터와 코드로 새로운 가치를 만들고, 지능적인 솔루션을 통해 사용자의 경험을 혁신하는 것을 목표로 합니다.
+            </p>
+            <a href="#projects" class="bg-sky-500 text-white font-bold py-3 px-8 rounded-full hover:bg-sky-600 transition-all duration-300 transform hover:scale-105">
+                프로젝트 보기
+            </a>
+        </section>
+
+        <!-- About Me Section -->
+        <section id="about" class="py-20">
+            <h2 class="text-4xl font-bold text-center mb-12 section-title">ABOUT ME</h2>
+            <div class="max-w-4xl mx-auto bg-gray-900 bg-opacity-50 p-8 rounded-lg shadow-2xl backdrop-blur-md">
+                <p class="text-lg leading-relaxed">
+                    안녕하세요! 저는 AI 기술을 통해 복잡한 문제를 해결하고, 사용자에게 더 나은 경험을 제공하는 AI 에이전트 개발자를 꿈꾸고 있습니다. 새로운 기술을 배우고 적용하는 것에 큰 흥미를 느끼며, 특히 대규모 언어 모델(LLM)과 생성형 AI 기술에 깊은 관심을 가지고 있습니다.
+                    <br><br>
+                    끊임없이 성장하고 소통하며 함께 가치를 만들어나가는 개발자가 되겠습니다.
+                </p>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills" class="py-20">
+            <h2 class="text-4xl font-bold text-center mb-12 section-title">SKILLS</h2>
+            <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Skill Category 1: Languages -->
+                <div class="bg-gray-900 bg-opacity-50 p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-sky-400 mb-4">Programming Languages</h3>
+                    <ul class="space-y-2">
+                        <li><i class="fas fa-check-circle text-sky-500 mr-2"></i>Python</li>
+                        <li><i class="fas fa-check-circle text-sky-500 mr-2"></i>JavaScript</li>
+                        <li><i class="fas fa-check-circle text-sky-500 mr-2"></i>SQL</li>
+                    </ul>
+                </div>
+                <!-- Skill Category 2: AI/ML Frameworks -->
+                <div class="bg-gray-900 bg-opacity-50 p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-purple-400 mb-4">AI/ML Frameworks</h3>
+                    <ul class="space-y-2">
+                        <li><i class="fas fa-check-circle text-purple-500 mr-2"></i>PyTorch / TensorFlow</li>
+                        <li><i class="fas fa-check-circle text-purple-500 mr-2"></i>LangChain</li>
+                        <li><i class="fas fa-check-circle text-purple-500 mr-2"></i>Scikit-learn</li>
+                        <li><i class="fas fa-check-circle text-purple-500 mr-2"></i>Hugging Face</li>
+                    </ul>
+                </div>
+                <!-- Skill Category 3: Tools & Etc -->
+                <div class="bg-gray-900 bg-opacity-50 p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-emerald-400 mb-4">Tools & Etc.</h3>
+                    <ul class="space-y-2">
+                        <li><i class="fas fa-check-circle text-emerald-500 mr-2"></i>Git & GitHub</li>
+                        <li><i class="fas fa-check-circle text-emerald-500 mr-2"></i>Docker</li>
+                        <li><i class="fas fa-check-circle text-emerald-500 mr-2"></i>FastAPI</li>
+                        <li><i class="fas fa-check-circle text-emerald-500 mr-2"></i>Vector DB (e.g., Pinecone)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="py-20">
+            <h2 class="text-4xl font-bold text-center mb-12 section-title">PROJECTS</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                
+                <!-- Project Card 1 -->
+                <div class="bg-gray-900 bg-opacity-70 rounded-lg overflow-hidden shadow-2xl group transition-all duration-300 hover:shadow-sky-500/50">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">챗봇 기반 스케줄 관리 에이전트</h3>
+                        <p class="text-gray-400 mb-4">자연어 처리를 통해 사용자의 말을 이해하고, 자동으로 스케줄을 등록, 수정, 조회해주는 AI 챗봇입니다.</p>
+                        <div class="mb-4">
+                            <span class="inline-block bg-sky-800 text-sky-200 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Python</span>
+                            <span class="inline-block bg-sky-800 text-sky-200 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">LangChain</span>
+                            <span class="inline-block bg-sky-800 text-sky-200 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">FastAPI</span>
+                        </div>
+                        <a href="#" target="_blank" class="text-sky-400 hover:text-sky-300 font-semibold">
+                            GitHub Repository <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Project Card 2 -->
+                <div class="bg-gray-900 bg-opacity-70 rounded-lg overflow-hidden shadow-2xl group transition-all duration-300 hover:shadow-purple-500/50">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">이미지 인식을 통한 상품 추천 시스템</h3>
+                        <p class="text-gray-400 mb-4">사용자가 업로드한 이미지와 유사한 스타일의 상품을 데이터베이스에서 찾아 추천하는 딥러닝 기반 시스템입니다.</p>
+                        <div class="mb-4">
+                            <span class="inline-block bg-purple-800 text-purple-200 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">PyTorch</span>
+                            <span class="inline-block bg-purple-800 text-purple-200 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">CNN</span>
+                            <span class="inline-block bg-purple-800 text-purple-200 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Scikit-learn</span>
+                        </div>
+                        <a href="#" target="_blank" class="text-purple-400 hover:text-purple-300 font-semibold">
+                            GitHub Repository <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 더 많은 프로젝트 카드를 여기에 추가할 수 있습니다. -->
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer & Contact -->
+    <footer id="contact" class="bg-black bg-opacity-80 mt-20 py-10 text-center">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold mb-4">CONTACT ME</h2>
+            <p class="mb-6 text-gray-400">함께할 기회가 있다면 아래 연락처로 편하게 연락 주세요.</p>
+            <div class="flex justify-center space-x-6 mb-8">
+                <a href="mailto:your_email@example.com" class="text-gray-300 hover:text-white transition-colors duration-300 transform hover:scale-110">
+                    <i class="fas fa-envelope fa-2x"></i>
+                </a>
+                <a href="https://github.com/your_username" target="_blank" class="text-gray-300 hover:text-white transition-colors duration-300 transform hover:scale-110">
+                    <i class="fab fa-github fa-2x"></i>
+                </a>
+                <a href="https://linkedin.com/in/your_profile" target="_blank" class="text-gray-300 hover:text-white transition-colors duration-300 transform hover:scale-110">
+                    <i class="fab fa-linkedin fa-2x"></i>
+                </a>
+            </div>
+            <p class="text-gray-500 text-sm">&copy; 2025 OOO. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Close mobile menu when a link is clicked
+        const mobileMenuLinks = mobileMenu.getElementsByTagName('a');
+        for (let i = 0; i < mobileMenuLinks.length; i++) {
+            mobileMenuLinks[i].addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        }
+    </script>
+</body>
+</html>
